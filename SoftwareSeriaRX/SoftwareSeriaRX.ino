@@ -1,44 +1,44 @@
 /*****************************************************************
-XBee_Serial_Passthrough.ino
-
-Set up a software serial port to pass data between an XBee Shield
-and the serial monitor.
-
-Hardware Hookup:
-  The XBee Shield makes all of the connections you'll need
-  between Arduino and XBee. If you have the shield make
-  sure the SWITCH IS IN THE "DLINE" POSITION. That will connect
-  the XBee's DOUT and DIN pins to Arduino pins 2 and 3.
-
-*****************************************************************/
-// We'll use SoftwareSerial to communicate with the XBee:
+ * Last updated 7/10/2020
+ * Code for an RF image transmitter based on the XBee and SparkFun XBee 
+ * for use on an Arduino Uno
+ * This was written to test RF attenuation in saltwater
+ * for the 2020 summer LAIR Lab OCAP reaserch project
+ * Plug the RX and boot it up first before booting the TX 
+ * TODO?: Add a startup handshake
+ * FOR DEBUG: UNCOMMENT SERIAL PORT COMMANDS FOR SD CARD AND I/O and look at serial Monitor
+ */
+//For Atmega328P's
+// XBee's DOUT (TX) is connected to pin 2 (Arduino's Software RX)
+// XBee's DIN (RX) is connected to pin 3 (Arduino's Software TX)
 #include <SoftwareSerial.h>
 #include <SD.h>
 #include <SPI.h>
 const int chipSelect = 4;
-volatile long incomingByte = -1;   // for incoming serial data
 SoftwareSerial XBee(2, 3); // RX, TX
+struct inData { //struct used for SRAM allocative efficiency 
+  volatile uint8_t imgvect; 
+};
 void setup(){
   XBee.begin(9600);
-  Serial.begin(9600);
+ //DEBUG: Serial.begin(9600);
   while(!SD.begin(chipSelect)){
-  Serial.println("SD not found");
-  delay(500);
-  } 
-  Serial.println("card is ready");
-  SD.remove("datalog.txt");
+  //DEBUG: Serial.println("SD not found");
+    delay(500);
+    } 
+ // DEBUG:Serial.println("card is ready");
+  SD.remove("datalog.txt"); //reset the datafile on the arduino
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
   dataFile.close();
 }
 
 void loop(){
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
-  while (XBee.available()) { // If data comes in from XBee, send it out to serial monitor
-    //incomingByte = XBee.read();
-    //if(dataFile && incomingByte >= 0){
-    dataFile.write(XBee.read());
-    //Serial.write(XBee.read());
-  //  }
-  }
+  struct inData rxData;
+  while (XBee.available()) { // as long as it recieves data it saves it 
+    rxData.imgvect = XBee.read();
+    dataFile.write((const uint8_t*)&rxData, sizeof(rxData)); //casts the struct data as an 8-bit number to make it as memory efficient as possible 
+    
+    }
    dataFile.close();
 }
