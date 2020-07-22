@@ -23,6 +23,8 @@ int smooth = 0; // For the delay function
 volatile long readData = -1; // this is not a great solution, but it works as a buffer between the read data 
 void setup()
 {
+ // delay(315000); //delay for test setup
+
   // for the XBee. Make sure the baud rate matches the config setting of your XBee.
   XBee.begin(9600);
  // DEBUG: Serial.begin(9600);
@@ -52,7 +54,7 @@ void setup()
      // DEBUG: Serial.write(readData);
       XBee.write(readData);
       smooth++;
-       if (smooth == 60){//flow control conditional
+       if (smooth == 45){//flow control conditional //62 min + 100 microsec
          delay(125);
          smooth = 0;
       }
@@ -67,6 +69,6 @@ void setup()
 }
 
 void loop()
-{
+{ 
 
 }

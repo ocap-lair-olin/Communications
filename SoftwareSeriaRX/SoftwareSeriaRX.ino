@@ -20,6 +20,7 @@ struct inData { //struct used for SRAM allocative efficiency
   volatile uint8_t imgvect; 
 };
 void setup(){
+ // delay(300000);
   XBee.begin(9600);
  //DEBUG: Serial.begin(9600);
   while(!SD.begin(chipSelect)){
